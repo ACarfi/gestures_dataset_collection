@@ -1,0 +1,60 @@
+<launch>
+  <param name = "gestures_folder" value="gestures_images" />
+  <param name = "speed" value="1000" />
+  <param name = "num_repetition" value="1" />
+
+  <arg name="inertial_sub_topic"  default="/G_Watch_R_5567/imu_data"/>
+  
+  <node pkg="gestures_dataset_collection" type="interface_node.py" name="interface_node" output="screen">
+    <remap from="/inertial" to="$(arg inertial_sub_topic)"/>
+  </node>
+
+ <node pkg="gestures_dataset_collection" type="republish_imu.py" name="republish" output="screen">
+    <remap from="/inertial" to="$(arg inertial_sub_topic)"/>
+  </node>
+
+  <!--<node pkg="topic_tools" type="relay" name="republish" output="screen" args="$(arg inertial_sub_topic) /imu_data" />-->
+  <!-- camera stream -->
+  <include file="$(find video_stream_opencv)/launch/camera.launch" >
+            <!-- node name and ros graph name -->
+            <arg name="camera_name" value="webcam" />
+            <!-- means video device 0, /dev/video0 -->
+            <arg name="video_stream_provider" value="0" />
+            <!-- set camera fps to (if the device allows) -->
+            <arg name="set_camera_fps" value="30"/>
+            <!-- set buffer queue size of frame capturing to (1 means we want the latest frame only) -->
+            <arg name="buffer_queue_size" value="1" />
+            <!-- throttling the querying of frames to -->
+            <arg name="fps" value="30" />
+            <!-- setting frame_id -->
+            <arg name="frame_id" value="webcam_optical_frame" />
+            <!-- camera info loading, take care as it needs the "file:///" at the start , e.g.:
+            "file:///$(find your_camera_package)/config/your_camera.yaml" -->
+            <arg name="camera_info_url" value="" />
+            <!-- flip the image horizontally (mirror it) -->
+            <arg name="flip_horizontal" value="false" />
+            <!-- flip the image vertically -->
+            <arg name="flip_vertical" value="false" />
+            <!-- force width and height, 0 means no forcing -->
+            <!--
+            <arg name="width" value="0"/>
+            <arg name="height" value="0"/>
+            -->
+            <!-- visualize on an image_view window the stream generated -->
+            <arg name="visualize" value="false" />
+    </include>
+
+    <node pkg="rosbag" type="record" name="rosbag_record_video" 
+       args="record -O $(arg path)/video /webcam/camera_info /webcam/image_raw /webcam/webcam_stream/parameter_descriptions /webcam/webcam_stream/parameter_updates"/>
+
+    <node pkg="rosbag" type="record" name="rosbag_record_info"
+       args="record -O $(arg path)/info /age /email /gender /language /name /surname"/>
+    
+    <node pkg="rosbag" type="record" name="rosbag_record_imu"
+       args="record -O $(arg path)/imu /imu_data"/>
+
+    <node pkg="rosbag" type="record" name="rosbag_record_gestures"
+       args="record -O $(arg path)/gestures /gestures"/>
+    
+</launch>
+
