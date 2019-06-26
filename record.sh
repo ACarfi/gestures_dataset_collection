@@ -5,4 +5,4 @@ sleep 1
 roslaunch gestures_dataset_collection interface.launch --dump-param path:=$FOLDER_PATH > "$FOLDER_PATH/param.yaml"
 sleep 1
 roslaunch gestures_dataset_collection interface.launch path:=$FOLDER_PATH 
-python script/data_analysis.py $FOLDER_PATH
+python script/bag2csv.py $FOLDER_PATH
