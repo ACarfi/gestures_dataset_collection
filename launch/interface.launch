@@ -1,7 +1,7 @@
 <launch>
   <param name = "gestures_folder" value="gestures_images" />
-  <param name = "speed" value="1000" />
-  <param name = "num_repetition" value="1" />
+  <param name = "speed" value="5000" />
+  <param name = "num_repetition" value="3" />
 
   <arg name="inertial_sub_topic"  default="/G_Watch_R_5567/imu_data"/>
   
