@@ -6,14 +6,19 @@ import matplotlib.pyplot as plt
 if (len(sys.argv) == 2):
     csvFolder = sys.argv[1]
     printing = False
-if (len(sys.argv) == 3):
+    overwrite = False
+elif (len(sys.argv) == 3):
     csvFolder = sys.argv[1]
     printing = sys.argv[2]
+    overwrite = False
+elif (len(sys.argv) == 4):
+    csvFolder = sys.argv[1]
+    printing = sys.argv[2]
+    overwrite = True
 elif (len(sys.argv) > 3):
     print(sys.argv)
     print("invalid number of argument")
     sys.exit(1)
-
 
 csvImuPath = csvFolder + "imu.csv"
 csvGesturesPath = csvFolder + "gestures.csv"
@@ -64,24 +69,30 @@ for i in range(0,len(gestures)-1):
 
 
 csvName = csvFolder + 'imu_labeled.csv'
-if not(os.path.isfile(csvName)):
-        with open(csvName, 'w+') as csvfile:
-            filewriter = csv.writer(csvfile, delimiter = ',')
-            values = ['ros_seconds', 'ros_nanoseconds', 'android_millis', 'angular_vel_x', 'angular_vel_y', 'angular_vel_z', 'linear_acc_x', 'linear_acc_y', 'linear_acc_z', 'gesture']
-            filewriter.writerow(values)
-            gestureTag = 0
 
-            for index in range(0, len(imuData)):
-                values = imuData[index].tolist()
-                l = labelings[gestureTag]
-                if index < l[0]:
-                    values.append("nan")
-                elif index >= l[0] and index <= l[1]:
-                    values.append(gesturesName[gestureTag])
-                elif index > l[1]:
-                    values.append("nan")
+if os.path.isfile(csvName) and overwrite:
+    print("The labeled file already exists, overwriting")
+    os.remove(csvName)
+
+if not(os.path.isfile(csvName)): 
+    with open(csvName, 'w+') as csvfile:
+        filewriter = csv.writer(csvfile, delimiter = ',')
+        values = ['ros_seconds', 'ros_nanoseconds', 'android_millis', 'angular_vel_x', 'angular_vel_y', 'angular_vel_z', 'linear_acc_x', 'linear_acc_y', 'linear_acc_z', 'gesture']
+        filewriter.writerow(values)
+        gestureTag = 0
+
+        for index in range(0, len(imuData)):
+            values = imuData[index].tolist()
+            l = labelings[gestureTag]
+            if index < l[0]:
+                values.append("nan")
+            elif index >= l[0] and index <= l[1]:
+                values.append(gesturesName[gestureTag])
+            elif index > l[1]:
+                values.append("nan")
+                if gestureTag < len(labelings)-1:
                     gestureTag = gestureTag + 1
-                filewriter.writerow(values)
+            filewriter.writerow(values)
 else:
     print("Warning the file already exist")
 
